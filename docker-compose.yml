@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  # OWASP Juice Shop target application
+  juice-shop:
+    image: bkimminich/juice-shop
+    container_name: juice-shop-target
+    ports:
+      - "3000:3000"
+    networks:
+      - pentest-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # OpenSearch - Search and Analytics Engine
+  opensearch:
+    image: opensearchproject/opensearch:2.11.1
+    container_name: opensearch
+    environment:
+      - cluster.name=pentest-cluster
+      - node.name=opensearch
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "DISABLE_INSTALL_DEMO_CONFIG=true"
+      - "DISABLE_SECURITY_PLUGIN=true"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    networks:
+      - pentest-network
+    restart: unless-stopped
+
+  # OpenSearch Dashboards - Visualization Dashboard
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.11.1
+    container_name: opensearch-dashboards
+    ports:
+      - "5601:5601"
+    expose:
+      - "5601"
+    environment:
+      - 'OPENSEARCH_HOSTS=["http://opensearch:9200"]'
+      - "DISABLE_SECURITY_DASHBOARDS_PLUGIN=true"
+    depends_on:
+      - opensearch
+    networks:
+      - pentest-network
+    restart: unless-stopped
+
+  # Penetration testing suite
+  pentest-suite:
+    build: .
+    container_name: pentest-automation
+    volumes:
+      - ./results:/app/results
+      - ./logs:/app/logs
+      - ./reports:/app/reports
+    networks:
+      - pentest-network
+    depends_on:
+      - juice-shop
+      - opensearch
+      - opensearch-dashboards
+    environment:
+      - TARGET_URL=http://juice-shop:3000
+      - PENTEST_OUTPUT_DIR=/app/results
+      - OPENSEARCH_URL=http://opensearch:9200
+      - OPENSEARCH_DASHBOARD_URL=http://opensearch-dashboards:5601
+    command: ["python", "pentest_automation.py"]
+    stdin_open: true
+    tty: true
+
+  # Optional: OWASP ZAP for advanced web testing
+  zap:
+    image: owasp/zap2docker-stable
+    container_name: zap-scanner
+    ports:
+      - "8080:8080"
+      - "8090:8090"
+    networks:
+      - pentest-network
+    command: zap-webswing.sh
+    volumes:
+      - ./zap-reports:/zap/reports
+
+networks:
+  pentest-network:
+    driver: bridge
+
+volumes:
+  opensearch-data:
+    driver: local

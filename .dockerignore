@@ -1,0 +1,46 @@
+# Docker ignore file for penetration testing suite
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+.pytest_cache/
+.venv/
+venv/
+env/
+ENV/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+logs/
+
+# Results and reports
+results/
+pentest_results*/
+crew_results/
+zap-reports/
+
+# Temporary files
+temp_passwords.txt
+msf_commands.rc
+*.tmp
+
+# Git
+.git/
+.gitignore
+
+# Documentation (include README.md)
+!README.md

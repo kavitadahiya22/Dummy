@@ -1,0 +1,35 @@
+# Enhanced Penetration Testing Suite Requirements
+
+# Core HTTP and web libraries
+requests>=2.31.0
+urllib3>=2.0.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# Security and penetration testing
+python-nmap>=0.7.1
+
+# PDF Report Generation
+reportlab>=4.0.0
+weasyprint>=59.0
+
+# Charts and Visualization
+matplotlib>=3.7.0
+plotly>=5.15.0
+
+# OpenSearch Integration
+opensearch-py>=2.3.0
+
+# Template Engine
+jinja2>=3.1.0
+
+# Image Processing (for PDF)
+Pillow>=10.0.0
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Additional utilities
+python-dateutil>=2.8.0
+pytz>=2023.3
